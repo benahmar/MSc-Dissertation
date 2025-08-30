@@ -145,7 +145,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -178,18 +178,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -201,7 +201,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -211,7 +211,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -382,7 +382,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -415,18 +415,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -439,7 +439,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
 
 #is.na in case of na obd found; used for limit testing    
     if (!is.na(common_obd)) {
@@ -450,7 +450,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -620,7 +620,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -653,18 +653,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -676,7 +676,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -686,7 +686,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -856,7 +856,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -889,18 +889,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -912,7 +912,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -922,7 +922,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -1092,7 +1092,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -1125,18 +1125,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -1148,7 +1148,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -1158,7 +1158,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -1336,7 +1336,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -1369,18 +1369,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -1392,7 +1392,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -1402,7 +1402,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -1573,7 +1573,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -1606,18 +1606,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -1629,7 +1629,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -1639,7 +1639,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -1809,7 +1809,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -1842,18 +1842,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -1865,7 +1865,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -1875,7 +1875,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -2045,7 +2045,7 @@ simulate_dataset <- function() {
   )
   
 #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
 #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
 #Creates data frame to store weights from BMA
@@ -2078,18 +2078,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -2101,7 +2101,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -2111,7 +2111,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -2289,7 +2289,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -2322,18 +2322,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -2346,7 +2346,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     #is.na in case of na obd found; used for limit testing    
     if (!is.na(common_obd)) {
@@ -2357,7 +2357,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -2527,7 +2527,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -2560,18 +2560,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -2583,7 +2583,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -2593,7 +2593,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -2763,7 +2763,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -2796,18 +2796,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -2819,7 +2819,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -2829,7 +2829,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -2999,7 +2999,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -3032,18 +3032,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -3055,7 +3055,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -3065,7 +3065,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -3243,7 +3243,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -3276,18 +3276,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -3299,7 +3299,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -3309,7 +3309,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -3480,7 +3480,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -3513,18 +3513,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -3536,7 +3536,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -3546,7 +3546,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -3716,7 +3716,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -3749,18 +3749,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -3772,7 +3772,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -3782,7 +3782,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -3952,7 +3952,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -3985,18 +3985,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -4008,7 +4008,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -4018,7 +4018,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -4219,7 +4219,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -4252,18 +4252,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -4275,7 +4275,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -4285,7 +4285,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -4462,7 +4462,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -4495,18 +4495,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -4518,7 +4518,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -4528,7 +4528,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -4700,7 +4700,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -4733,18 +4733,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -4756,7 +4756,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -4766,7 +4766,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -4938,7 +4938,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -4971,18 +4971,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -4994,7 +4994,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -5004,7 +5004,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -5160,7 +5160,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -5193,18 +5193,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -5216,7 +5216,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -5226,7 +5226,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -5383,7 +5383,7 @@ simulate_dataset <- function() {
   )
   
   #To store OBD
-  obd_path <- numeric(n_cohorts)
+  obd_hist <- numeric(n_cohorts)
   #Creates data frame to store dose_summary and average over later
   cohort_dose_preds <- data.frame()
   #Creates data frame to store weights from BMA
@@ -5416,18 +5416,18 @@ simulate_dataset <- function() {
     pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
     pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
     
-    eff_post_all <- weights[1]*pred_lin +
+    eff_preds <- weights[1]*pred_lin +
       weights[2]*pred_quad +
       weights[3]*pred_emax
     
-    eff_probs <- colMeans(eff_post_all < eff_threshold)
+    eff_probs <- colMeans(eff_preds < eff_threshold)
     tox_probs <- colMeans(pred_log_tox < tox_threshold)
     
     dose_summary <- data.frame(
       cohort = cohort_i,
       dose = dose_grid$dose,
       eff_probs, tox_probs,
-      mean_pred_eff = colMeans(eff_post_all),
+      mean_pred_eff = colMeans(eff_preds),
       mean_pred_tox = colMeans(pred_log_tox)
     )
     cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
@@ -5439,7 +5439,7 @@ simulate_dataset <- function() {
       common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
     }
     
-    obd_path[cohort_i] <- common_obd
+    obd_hist[cohort_i] <- common_obd
     
     if (!is.na(common_obd)) {
       new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
@@ -5449,7 +5449,7 @@ simulate_dataset <- function() {
     }
   }
   
-  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
+  return(list(obd = obd_hist, cohort_dose_preds = cohort_dose_preds,  model_weights = weights_hist))
 }
 
 #-------------------------------------------------------------------------------
@@ -5497,5 +5497,6 @@ avg_responses <- all_responses %>%
 write.csv(all_results, "obd_differentmodelstest.csv", row.names = TRUE)
 write.csv(combined_responses, "responses_differentmodelstest.csv", row.names = TRUE)
 write.csv(combined_weights, "weights_differentmodelstest.csv", row.names = TRUE)
+
 
 
