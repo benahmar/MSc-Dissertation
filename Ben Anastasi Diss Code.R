@@ -5498,5 +5498,554 @@ write.csv(all_results, "obd_differentmodelstest.csv", row.names = TRUE)
 write.csv(combined_responses, "responses_differentmodelstest.csv", row.names = TRUE)
 write.csv(combined_weights, "weights_differentmodelstest.csv", row.names = TRUE)
 
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#Comparing baseline to single model results
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+                                       
+#-------------------------------------------------------------------------------
+#Config
+#-------------------------------------------------------------------------------
+n_datasets   <- 50
+n_cohorts    <- 6
+cohort_size  <- 3
+eff_threshold <- 70
+tox_threshold <- 0.25
+probE <- 0.1
+probT <- 0.1
+
+dose_grid <- data.frame(dose = c(0.35, 0.7, 1.05, 1.4)) %>%
+  mutate(dose2 = dose^2)
+
+all_results <- data.frame()
+all_responses <- data.frame()
+
+combined_responses <- data.frame()
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#SIMULATION 24 - linear
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#Toxicity simulation
+tox_sim <- function(nrep = 3,
+                    dose_levels = c(0.35, 0.7, 1.05, 1.4),
+                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+  #Repeat for 3 patients per dose
+  dose <- rep(dose_levels, each = nrep)
+  
+  #Assumed true model (could change this to b0 + b1*dose and then fit more complex models)
+  z = b0 + b1*dose
+  
+  #Inverse-logit function
+  pr = 1/(1+exp(-z))
+  
+  #Bernoulli response variable
+  tox = rbinom(length(pr),1,pr)
+  
+  return(data.frame(toxicity = tox, dose = dose))
+}
+
+#Efficacy simulation
+eff_sim <- function(nrep = 3,
+                    dose_levels = c(0.35, 0.7, 1.05, 1.4),
+                    n = 1,
+                    e0 = 79.2,
+                    emax = 20,
+                    ec50 = 0.9,
+                    sd_efficacy = 7) {
+  
+  #Repeat dose levels for 3 patients per dose
+  dose <- rep(dose_levels, each = nrep)
+  
+  #Calculate mean efficacy using Hill (sigmoidal form) model
+  mean_efficacy <- e0 - (emax * dose^n) / (ec50^n + dose^n)
+  
+  #Simulate efficacy values for each dose level
+  eff <- rnorm(length(dose), 
+               mean = mean_efficacy, 
+               sd = sd_efficacy)
+  
+  #Create data frame
+  eff_df <- data.frame(
+    dose = dose,
+    efficacy = eff)
+  return(data.frame(dose = dose, efficacy = eff))
+}
+
+#-------------------------------------------------------------------------------
+#Simulate a single iteration
+#-------------------------------------------------------------------------------
+simulate_dataset <- function() {
+  
+  eff_df <- eff_sim(nrep = 12) %>% mutate(dose2 = dose^2)
+  tox_df <- tox_sim(nrep = 12)
+  
+  tox_model_log <- brm(
+    toxicity ~ exp(dose), data = tox_df,
+    family = bernoulli(link = "logit"),
+    prior = c(
+      prior(normal(-5.891, 2.5), class = "Intercept"),
+      prior(normal(1.308, 2.5), class = "b")
+    ),
+    chains = 4, cores = 1, iter = 1000, refresh = 0
+  )
+  
+  mod_linear <- brm(
+    efficacy ~ dose, data = eff_df, family = gaussian(),
+    prior = c(
+      prior(normal(76.97, 10), class = "Intercept"),
+      prior(normal(-7.67, 5),   class = "b"),
+      prior(student_t(3, 0, 7), class = "sigma")
+    ),
+    chains = 4, cores = 1, iter = 1000, refresh = 0
+  )
+  
+  #To store OBD
+  obd_path <- numeric(n_cohorts)
+  #Creates data frame to store dose_summary and average over later
+  cohort_dose_preds <- data.frame()
+  
+  for (cohort_i in 1:n_cohorts) {
+    
+    #Update models
+    tox_model_log <- update(tox_model_log, newdata = tox_df, recompile = FALSE)
+    mod_linear    <- update(mod_linear,    newdata = eff_df, recompile = FALSE)
+
+    #Predictions
+    pred_log_tox <- posterior_epred(tox_model_log, newdata = dose_grid)
+    pred_lin     <- posterior_epred(mod_linear, newdata = dose_grid)
+
+    eff_probs <- colMeans(pred_lin < eff_threshold)
+    tox_probs <- colMeans(pred_log_tox < tox_threshold)
+    
+    dose_summary <- data.frame(
+      cohort = cohort_i,
+      dose = dose_grid$dose,
+      eff_probs, tox_probs,
+      mean_pred_eff = colMeans(pred_lin),
+      mean_pred_tox = colMeans(pred_log_tox)
+    )
+    cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
+    
+    #safe in case of na; used for limit testing       
+    safe_doses <- dose_summary %>% filter(eff_probs > probE, tox_probs > probT)
+    if (nrow(safe_doses) == 0) {
+      common_obd <- NA
+    } else {
+      common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
+    }
+    
+    obd_path[cohort_i] <- common_obd
+    
+    #is.na in case of na obd found; used for limit testing    
+    if (!is.na(common_obd)) {
+      new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
+      new_tox <- tox_sim(nrep = cohort_size, dose_levels = common_obd)
+      eff_df <- bind_rows(eff_df, new_eff)
+      tox_df <- bind_rows(tox_df, new_tox)
+    }
+  }
+  
+  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds))
+}
+
+#-------------------------------------------------------------------------------
+#Parallelism
+#-------------------------------------------------------------------------------
+plan(multisession, workers = 8)
+start <- Sys.time()
+results <- future_lapply(1:n_datasets, function(i) simulate_dataset(), future.seed = TRUE)
+end <- Sys.time()
+print(end - start)
+
+#-------------------------------------------------------------------------------
+#Results summary
+#-------------------------------------------------------------------------------
+obd_df <- do.call(rbind, lapply(seq_along(results), function(i) {
+  data.frame(
+    dataset = i,
+    cohort = seq_along(results[[i]]$obd),
+    dose = results[[i]]$obd,
+    eff_threshold = eff_threshold,
+    tox_threshold = tox_threshold
+  )
+}))
+
+obd_frequency <- obd_df %>%
+  count(cohort, dose, name = "count")
+
+all_results <- bind_rows(all_results, obd_frequency)
+
+#-------------------------------------------------------------------------------
+
+#Combine all response predictions per cohort
+all_responses <- do.call(rbind, lapply(results, function(x) x$cohort_))
+
+#Average per dose per cohort across datasets
+avg_responses <- all_responses %>%
+  group_by(cohort, dose) %>%
+  summarise(
+    avg_eff = mean(mean_pred_eff),
+    avg_tox = mean(mean_pred_tox)
+  ) %>%
+  ungroup()
+
+combined_responses <- bind_rows(combined_responses, avg_responses)
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#SIMULATION 25 - quadratic
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#Toxicity simulation
+tox_sim <- function(nrep = 3,
+                    dose_levels = c(0.35, 0.7, 1.05, 1.4),
+                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+  #Repeat for 3 patients per dose
+  dose <- rep(dose_levels, each = nrep)
+  
+  #Assumed true model (could change this to b0 + b1*dose and then fit more complex models)
+  z = b0 + b1*dose
+  
+  #Inverse-logit function
+  pr = 1/(1+exp(-z))
+  
+  #Bernoulli response variable
+  tox = rbinom(length(pr),1,pr)
+  
+  return(data.frame(toxicity = tox, dose = dose))
+}
+
+#Efficacy simulation
+eff_sim <- function(nrep = 3,
+                    dose_levels = c(0.35, 0.7, 1.05, 1.4),
+                    n = 1,
+                    e0 = 79.2,
+                    emax = 20,
+                    ec50 = 0.9,
+                    sd_efficacy = 7) {
+  
+  #Repeat dose levels for 3 patients per dose
+  dose <- rep(dose_levels, each = nrep)
+  
+  #Calculate mean efficacy using Hill (sigmoidal form) model
+  mean_efficacy <- e0 - (emax * dose^n) / (ec50^n + dose^n)
+  
+  #Simulate efficacy values for each dose level
+  eff <- rnorm(length(dose), 
+               mean = mean_efficacy, 
+               sd = sd_efficacy)
+  
+  #Create data frame
+  eff_df <- data.frame(
+    dose = dose,
+    efficacy = eff)
+  return(data.frame(dose = dose, efficacy = eff))
+}
+
+#-------------------------------------------------------------------------------
+#Simulate a single iteration
+#-------------------------------------------------------------------------------
+simulate_dataset <- function() {
+  
+  eff_df <- eff_sim(nrep = 12) %>% mutate(dose2 = dose^2)
+  tox_df <- tox_sim(nrep = 12)
+  
+  tox_model_log <- brm(
+    toxicity ~ exp(dose), data = tox_df,
+    family = bernoulli(link = "logit"),
+    prior = c(
+      prior(normal(-5.891, 2.5), class = "Intercept"),
+      prior(normal(1.308, 2.5), class = "b")
+    ),
+    chains = 4, cores = 1, iter = 1000, refresh = 0
+  )
+  
+  mod_quad <- brm(
+    efficacy ~ dose + dose2, data = eff_df, family = gaussian(),
+    prior = c(
+      prior(normal(78.61, 10),  class = "Intercept"),
+      prior(normal(-14.76, 6),  class = "b", coef = "dose"),
+      prior(normal(5.06, 4),    class = "b", coef = "dose2"),
+      prior(student_t(3,0,7), class="sigma")
+    ), 
+    chains = 4, cores = 1, iter = 1000, refresh = 0
+  )
+  
+  #To store OBD
+  obd_path <- numeric(n_cohorts)
+  #Creates data frame to store dose_summary and average over later
+  cohort_dose_preds <- data.frame()
+  
+  for (cohort_i in 1:n_cohorts) {
+    
+    #Update models
+    tox_model_log <- update(tox_model_log, newdata = tox_df, recompile = FALSE)
+    mod_quad      <- update(mod_quad,      newdata = eff_df, recompile = FALSE)
+    
+    #Predictions
+    pred_log_tox <- posterior_epred(tox_model_log, newdata = dose_grid)
+    pred_quad    <- posterior_epred(mod_quad, newdata = dose_grid)
+    
+    eff_probs <- colMeans(pred_quad < eff_threshold)
+    tox_probs <- colMeans(pred_log_tox < tox_threshold)
+    
+    dose_summary <- data.frame(
+      cohort = cohort_i,
+      dose = dose_grid$dose,
+      eff_probs, tox_probs,
+      mean_pred_eff = colMeans(pred_quad),
+      mean_pred_tox = colMeans(pred_log_tox)
+    )
+    cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
+    
+    #safe in case of na; used for limit testing       
+    safe_doses <- dose_summary %>% filter(eff_probs > probE, tox_probs > probT)
+    if (nrow(safe_doses) == 0) {
+      common_obd <- NA
+    } else {
+      common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
+    }
+    
+    obd_path[cohort_i] <- common_obd
+    
+    #is.na in case of na obd found; used for limit testing    
+    if (!is.na(common_obd)) {
+      new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
+      new_tox <- tox_sim(nrep = cohort_size, dose_levels = common_obd)
+      eff_df <- bind_rows(eff_df, new_eff)
+      tox_df <- bind_rows(tox_df, new_tox)
+    }
+  }
+  
+  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds))
+}
+
+#-------------------------------------------------------------------------------
+#Parallelism
+#-------------------------------------------------------------------------------
+plan(multisession, workers = 8)
+start <- Sys.time()
+results <- future_lapply(1:n_datasets, function(i) simulate_dataset(), future.seed = TRUE)
+end <- Sys.time()
+print(end - start)
+
+#-------------------------------------------------------------------------------
+#Results summary
+#-------------------------------------------------------------------------------
+obd_df <- do.call(rbind, lapply(seq_along(results), function(i) {
+  data.frame(
+    dataset = i,
+    cohort = seq_along(results[[i]]$obd),
+    dose = results[[i]]$obd,
+    eff_threshold = eff_threshold,
+    tox_threshold = tox_threshold
+  )
+}))
+
+obd_frequency <- obd_df %>%
+  count(cohort, dose, name = "count")
+
+all_results <- bind_rows(all_results, obd_frequency)
+
+#-------------------------------------------------------------------------------
+
+#Combine all response predictions per cohort
+all_responses <- do.call(rbind, lapply(results, function(x) x$cohort_))
+
+#Average per dose per cohort across datasets
+avg_responses <- all_responses %>%
+  group_by(cohort, dose) %>%
+  summarise(
+    avg_eff = mean(mean_pred_eff),
+    avg_tox = mean(mean_pred_tox)
+  ) %>%
+  ungroup()
+
+combined_responses <- bind_rows(combined_responses, avg_responses)
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#SIMULATION 26 - emax
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+#Toxicity simulation
+tox_sim <- function(nrep = 3,
+                    dose_levels = c(0.35, 0.7, 1.05, 1.4),
+                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+  #Repeat for 3 patients per dose
+  dose <- rep(dose_levels, each = nrep)
+  
+  #Assumed true model (could change this to b0 + b1*dose and then fit more complex models)
+  z = b0 + b1*dose
+  
+  #Inverse-logit function
+  pr = 1/(1+exp(-z))
+  
+  #Bernoulli response variable
+  tox = rbinom(length(pr),1,pr)
+  
+  return(data.frame(toxicity = tox, dose = dose))
+}
+
+#Efficacy simulation
+eff_sim <- function(nrep = 3,
+                    dose_levels = c(0.35, 0.7, 1.05, 1.4),
+                    n = 1,
+                    e0 = 79.2,
+                    emax = 20,
+                    ec50 = 0.9,
+                    sd_efficacy = 7) {
+  
+  #Repeat dose levels for 3 patients per dose
+  dose <- rep(dose_levels, each = nrep)
+  
+  #Calculate mean efficacy using Hill (sigmoidal form) model
+  mean_efficacy <- e0 - (emax * dose^n) / (ec50^n + dose^n)
+  
+  #Simulate efficacy values for each dose level
+  eff <- rnorm(length(dose), 
+               mean = mean_efficacy, 
+               sd = sd_efficacy)
+  
+  #Create data frame
+  eff_df <- data.frame(
+    dose = dose,
+    efficacy = eff)
+  return(data.frame(dose = dose, efficacy = eff))
+}
+
+#-------------------------------------------------------------------------------
+#Simulate a single iteration
+#-------------------------------------------------------------------------------
+simulate_dataset <- function() {
+  
+  eff_df <- eff_sim(nrep = 12) %>% mutate(dose2 = dose^2)
+  tox_df <- tox_sim(nrep = 12)
+  
+  tox_model_log <- brm(
+    toxicity ~ exp(dose), data = tox_df,
+    family = bernoulli(link = "logit"),
+    prior = c(
+      prior(normal(-5.891, 2.5), class = "Intercept"),
+      prior(normal(1.308, 2.5), class = "b")
+    ),
+    chains = 4, cores = 1, iter = 1000, refresh = 0
+  )
+  
+  mod_emax <- brm(
+    bf(efficacy ~ e0 - (emax * dose) / (ec50 + dose),
+       e0 + emax + ec50 ~ 1, nl = TRUE),
+    data = eff_df, family = gaussian(),
+    prior = c(
+      prior(normal(79.2,20), nlpar="e0"),
+      prior(normal(19.2,20), nlpar="emax"),
+      prior(uniform(0.35, 1.4), nlpar = "ec50"),
+      prior(student_t(3,0,7), class="sigma")
+    ),
+    chains = 4, cores = 1, iter = 1000, refresh = 0
+  )
+  
+  
+  #To store OBD
+  obd_path <- numeric(n_cohorts)
+  #Creates data frame to store dose_summary and average over later
+  cohort_dose_preds <- data.frame()
+  
+  for (cohort_i in 1:n_cohorts) {
+    
+    #Update models
+    tox_model_log <- update(tox_model_log, newdata = tox_df, recompile = FALSE)
+    mod_emax      <- update(mod_emax,      newdata = eff_df, recompile = FALSE)
+    
+    #Predictions
+    pred_log_tox <- posterior_epred(tox_model_log, newdata = dose_grid)
+    pred_emax    <- posterior_epred(mod_emax, newdata = dose_grid)
+    
+    eff_probs <- colMeans(pred_emax < eff_threshold)
+    tox_probs <- colMeans(pred_log_tox < tox_threshold)
+    
+    dose_summary <- data.frame(
+      cohort = cohort_i,
+      dose = dose_grid$dose,
+      eff_probs, tox_probs,
+      mean_pred_eff = colMeans(pred_emax),
+      mean_pred_tox = colMeans(pred_log_tox)
+    )
+    cohort_dose_preds <- rbind(cohort_dose_preds, dose_summary)
+    
+    #safe in case of na; used for limit testing       
+    safe_doses <- dose_summary %>% filter(eff_probs > probE, tox_probs > probT)
+    if (nrow(safe_doses) == 0) {
+      common_obd <- NA
+    } else {
+      common_obd <- safe_doses$dose[which.min(safe_doses$mean_pred_eff)]
+    }
+    
+    obd_path[cohort_i] <- common_obd
+    
+    #is.na in case of na obd found; used for limit testing    
+    if (!is.na(common_obd)) {
+      new_eff <- eff_sim(nrep = cohort_size, dose_levels = common_obd) %>% mutate(dose2 = dose^2)
+      new_tox <- tox_sim(nrep = cohort_size, dose_levels = common_obd)
+      eff_df <- bind_rows(eff_df, new_eff)
+      tox_df <- bind_rows(tox_df, new_tox)
+    }
+  }
+  
+  return(list(obd = obd_path, cohort_dose_preds = cohort_dose_preds))
+}
+
+#-------------------------------------------------------------------------------
+#Parallelism
+#-------------------------------------------------------------------------------
+plan(multisession, workers = 8)
+start <- Sys.time()
+results <- future_lapply(1:n_datasets, function(i) simulate_dataset(), future.seed = TRUE)
+end <- Sys.time()
+print(end - start)
+
+#-------------------------------------------------------------------------------
+#Results summary
+#-------------------------------------------------------------------------------
+obd_df <- do.call(rbind, lapply(seq_along(results), function(i) {
+  data.frame(
+    dataset = i,
+    cohort = seq_along(results[[i]]$obd),
+    dose = results[[i]]$obd,
+    eff_threshold = eff_threshold,
+    tox_threshold = tox_threshold
+  )
+}))
+
+obd_frequency <- obd_df %>%
+  count(cohort, dose, name = "count")
+
+all_results <- bind_rows(all_results, obd_frequency)
+
+#-------------------------------------------------------------------------------
+
+#Combine all response predictions per cohort
+all_responses <- do.call(rbind, lapply(results, function(x) x$cohort_))
+
+#Average per dose per cohort across datasets
+avg_responses <- all_responses %>%
+  group_by(cohort, dose) %>%
+  summarise(
+    avg_eff = mean(mean_pred_eff),
+    avg_tox = mean(mean_pred_tox)
+  ) %>%
+  ungroup()
+
+combined_responses <- bind_rows(combined_responses, avg_responses)
+
+
+write.csv(all_results, "obd_singlemodel.csv", row.names = TRUE)
+write.csv(combined_responses, "responses_singlemodel.csv", row.names = TRUE)
+                                       
+
+
 
 
