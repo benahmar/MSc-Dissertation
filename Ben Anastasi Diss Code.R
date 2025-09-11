@@ -49,7 +49,7 @@ combined_responses <- data.frame()
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904, b1 = 2.952, sigma = 1) {
+                    b0 = -4.904, b1 = 2.952, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -286,7 +286,7 @@ write.csv(combined_weights, "weights_baseline.csv", row.names = TRUE)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -5.844 , b1 = 3.569, sigma = 1) {
+                    b0 = -5.844 , b1 = 3.569, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -524,7 +524,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -3.643 , b1 = 1.997, sigma = 1) {
+                    b0 = -3.643 , b1 = 1.997, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -760,7 +760,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.953 , b1 = 2.660, sigma = 1) {
+                    b0 = -4.953 , b1 = 2.660, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -996,7 +996,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.851 , b1 = 3.188, sigma = 1) {
+                    b0 = -4.851 , b1 = 3.188, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -1240,7 +1240,7 @@ write.csv(combined_weights, "weights_tox_varied.csv", row.names = TRUE)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904, b1 = 2.952, sigma = 1) {
+                    b0 = -4.904, b1 = 2.952, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -1477,7 +1477,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -1713,7 +1713,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -1949,7 +1949,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
 #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -2193,7 +2193,7 @@ write.csv(combined_weights, "weights_eff_varied.csv", row.names = TRUE)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -5.844 , b1 = 3.166, sigma = 1) {
+                    b0 = -5.844 , b1 = 3.166, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -2431,7 +2431,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -5.792 , b1 = 3.936, sigma = 1) {
+                    b0 = -5.792 , b1 = 3.936, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -2667,7 +2667,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -3.643 , b1 = 1.545, sigma = 1) {
+                    b0 = -3.643 , b1 = 1.545, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -2903,7 +2903,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -3.588 , b1 = 2.215, sigma = 1) {
+                    b0 = -3.588 , b1 = 2.215, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -3147,7 +3147,7 @@ write.csv(combined_weights, "weights_tox_varied_2.csv", row.names = TRUE)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904, b1 = 2.952, sigma = 1) {
+                    b0 = -4.904, b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -3384,7 +3384,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -3620,7 +3620,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -3856,7 +3856,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -4123,7 +4123,7 @@ combined_responses <- data.frame()
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.963, b1 = 3.720, b2 = -.5, sigma = 1) {
+                    b0 = -4.963, b1 = 3.720, b2 = -.5, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -4366,7 +4366,7 @@ write.csv(combined_weights, "weights_baseline.csv", row.names = TRUE)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -3.887, b1 = 1.623, b2 = 0.5, sigma = 1) {
+                    b0 = -3.887, b1 = 1.623, b2 = 0.5, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -4604,7 +4604,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -5.535, b1 = 1.155, sigma = 1) {
+                    b0 = -5.535, b1 = 1.155, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -4842,7 +4842,7 @@ combined_weights <- bind_rows(combined_weights, avg_weights)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904, b1 = 2.952, sigma = 1) {
+                    b0 = -4.904, b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -5064,7 +5064,7 @@ combined_responses <- bind_rows(combined_responses, avg_responses)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904, b1 = 2.952, sigma = 1) {
+                    b0 = -4.904, b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -5287,7 +5287,7 @@ combined_responses <- bind_rows(combined_responses, avg_responses)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904, b1 = 2.952, sigma = 1) {
+                    b0 = -4.904, b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -5531,7 +5531,7 @@ combined_responses <- data.frame()
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -5702,7 +5702,7 @@ combined_responses <- bind_rows(combined_responses, avg_responses)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -5874,7 +5874,7 @@ combined_responses <- bind_rows(combined_responses, avg_responses)
 #Toxicity simulation
 tox_sim <- function(nrep = 3,
                     dose_levels = c(0.35, 0.7, 1.05, 1.4),
-                    b0 = -4.904 , b1 = 2.952, sigma = 1) {
+                    b0 = -4.904 , b1 = 2.952, sigma = 2.5) {
   #Repeat for 3 patients per dose
   dose <- rep(dose_levels, each = nrep)
   
@@ -6045,6 +6045,7 @@ combined_responses <- bind_rows(combined_responses, avg_responses)
 write.csv(all_results, "obd_singlemodel.csv", row.names = TRUE)
 write.csv(combined_responses, "responses_singlemodel.csv", row.names = TRUE)
                                        
+
 
 
 
